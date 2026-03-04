@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>Spotify Playlist Her</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1DB954;--green-h:#1ed760;
+  --bg:#0d0d0d;--surf:#181818;--surf2:#242424;
+  --bdr:rgba(255,255,255,0.08);
+  --txt:#fff;--txt2:#b3b3b3;
+  --danger:#f87171;--r:12px;
+}
+/* Light theme */
+html.theme-light{
+  --bg:#f0f0f0;--surf:#ffffff;--surf2:#e8e8e8;
+  --bdr:rgba(0,0,0,0.1);
+  --txt:#111;--txt2:#555;
+}
+html.theme-light body{background:var(--bg);color:var(--txt)}
+html.theme-light .hd{background:rgba(255,255,255,0.8)}
+html.theme-light #player-bar{background:linear-gradient(180deg,#f5f5f5 0%,#ebebeb 100%)}
+html.theme-light .pl-card{background:#fff}
+html.theme-light .settings-item input{background:#f0f0f0;color:#111}
+html.theme-light .track-row{background:transparent}
+html.theme-light .modal-track-row:hover{background:rgba(0,0,0,0.05)}
+html.theme-light .user-dropdown{background:#fff}
+html.theme-light .filter-card{background:#fff}
+html.theme-light .filter-btn{background:rgba(0,0,0,0.05);color:#444}
+html.theme-light .filter-custom-btn{background:rgba(0,0,0,0.05);color:#666}
+html.theme-light .filter-btn.active{background:rgba(29,185,84,0.15);color:var(--green)}
+/* System preference (applied when theme = 'system') */
+@media(prefers-color-scheme:light){
+  html.theme-system{
+    --bg:#f0f0f0;--surf:#ffffff;--surf2:#e8e8e8;
+    --bdr:rgba(0,0,0,0.1);--txt:#111;--txt2:#555;
+  }
+  html.theme-system body{background:var(--bg);color:var(--txt)}
+  html.theme-system .hd{background:rgba(255,255,255,0.8)}
+  html.theme-system #player-bar{background:linear-gradient(180deg,#f5f5f5 0%,#ebebeb 100%)}
+  html.theme-system .pl-card{background:#fff}
+  html.theme-system .settings-item input{background:#f0f0f0;color:#111}
+  html.theme-system .modal-track-row:hover{background:rgba(0,0,0,0.05)}
+  html.theme-system .user-dropdown{background:#fff}
+  html.theme-system .filter-card{background:#fff}
+  html.theme-system .filter-btn{background:rgba(0,0,0,0.05);color:#444}
+  html.theme-system .filter-custom-btn{background:rgba(0,0,0,0.05);color:#666}
+  html.theme-system .filter-btn.active{background:rgba(29,185,84,0.15);color:var(--green)}
+}
+/* Theme toggle buttons */
+.theme-toggle{display:flex;align-items:center;gap:4px;background:var(--surf2);border-radius:999px;padding:3px;border:1px solid var(--bdr)}
+.theme-btn{background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;color:var(--txt2);transition:all 120ms;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.theme-btn.active{background:var(--surf);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,0.25)}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;display:flex;flex-direction:column}
+
+/* Global hidden */
+.hidden{display:none!important}
+
+/* Header */
+.hd{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);flex-shrink:0;gap:12px;position:relative;z-index:200;min-width:0}
+.hd-logo{display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden}
+.hd-logo svg{color:var(--green);flex-shrink:0}
+.hd-logo h1{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hd-right{display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:nowrap}
+.status-pill{font-size:11px;font-weight:600;padding:0 10px;border-radius:999px;white-space:nowrap;height:36px;display:inline-flex;align-items:center;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.status-pill.on{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.4);color:var(--green)}
+.status-pill.off{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.35);color:#fbbf24}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all 110ms;padding:7px 16px;white-space:nowrap}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-green{background:var(--green);color:#000}
+.btn-green:hover:not(:disabled){background:var(--green-h)}
+.btn-outline{background:transparent;color:var(--txt);border:1px solid rgba(255,255,255,0.28)}
+.btn-outline:hover:not(:disabled){border-color:rgba(255,255,255,0.7)}
+.btn-xs{padding:5px 12px;font-size:11px}
+.hd-right .btn-xs{height:36px;padding:0 14px}
+.icon-btn{background:transparent;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:5px;border-radius:50%;color:var(--txt2);transition:color 110ms,background 110ms}
+.icon-btn:hover{color:var(--txt);background:rgba(255,255,255,0.08)}
+.icon-btn.danger:hover{color:var(--danger);background:rgba(248,113,113,0.1)}
+
+/* Responsive header — hide non-essential text when narrow */
+@media(max-width:780px){
+  .hd-logo h1{display:none}
+  .status-pill{max-width:120px;font-size:10px;padding:0 8px}
+  .hd-right .btn-xs{padding:0 10px;font-size:10px}
+  .user-name{display:none}
+}
+
+/* User menu (avatar + dropdown) */
+.user-menu{position:relative}
+.user-btn{display:flex;align-items:center;gap:8px;background:var(--surf2);border:1px solid var(--bdr);border-radius:999px;padding:4px 12px 4px 4px;cursor:pointer;transition:border-color 150ms,background 150ms}
+.user-btn:hover{border-color:rgba(255,255,255,0.25);background:#2a2a2a}
+html.theme-light .user-btn:hover{border-color:rgba(0,0,0,0.15);background:#d4d4d4}
+html.theme-system .user-btn:hover{border-color:rgba(255,255,255,0.25);background:#2a2a2a}
+@media(prefers-color-scheme:light){html.theme-system .user-btn:hover{border-color:rgba(0,0,0,0.15);background:#d4d4d4}}
+.user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--surf2)}
+.user-avatar-ph{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1DB954,#158a3e);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-chevron{color:var(--txt2);transition:transform 200ms;flex-shrink:0}
+.user-btn.open .user-chevron{transform:rotate(180deg)}
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:#1e1e1e;border:1px solid rgba(255,255,255,0.12);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.6);overflow:hidden;z-index:9999;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;transition:opacity 160ms,transform 160ms}
+.user-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.dropdown-user-info{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--bdr)}
+.dropdown-user-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--surf2);flex-shrink:0}
+.dropdown-user-avatar-ph{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1DB954,#158a3e);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#000;flex-shrink:0}
+.dropdown-user-name{font-size:13px;font-weight:600}
+.dropdown-user-label{font-size:10px;color:var(--txt2);margin-top:2px}
+.dropdown-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13px;cursor:pointer;transition:background 100ms;background:none;border:none;color:var(--txt);width:100%;text-align:left}
+.dropdown-item:hover{background:rgba(255,255,255,0.07)}
+.dropdown-item.danger:hover{background:rgba(248,113,113,0.1);color:var(--danger)}
+.dropdown-item svg{opacity:.65;flex-shrink:0}
+
+/* Settings panel */
+#settings-wrap{background:var(--surf);border-bottom:1px solid var(--bdr);overflow:hidden;max-height:0;transition:max-height 350ms ease,padding 350ms ease;flex-shrink:0}
+#settings-wrap.open{max-height:400px;padding:16px 20px}
+.settings-list{display:flex;flex-direction:column;gap:10px;max-width:480px}
+.settings-item{display:flex;flex-direction:column;gap:5px}
+.settings-item label{font-size:11px;font-weight:600;color:var(--txt2);letter-spacing:0.02em}
+.settings-item input{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:8px 12px;color:var(--txt);font-size:12px;outline:none;width:100%;box-sizing:border-box;transition:border-color 150ms}
+.settings-item input:focus{border-color:var(--green)}
+.settings-item-row{display:flex;align-items:center;gap:10px}
+.settings-item-row .settings-item{flex:1}
+.settings-theme-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
+.settings-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px;padding-top:10px;border-top:1px solid var(--bdr)}
+.settings-hint{font-size:10px;color:var(--txt2)}
+.settings-hint code{background:var(--surf2);padding:2px 5px;border-radius:4px;font-family:monospace;font-size:10px}
+.hint{margin-top:8px;font-size:11px;color:#555}
+.hint code{color:#888;user-select:all}
+
+/* Player Bar */
+#player-bar{background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);border-top:1px solid rgba(29,185,84,0.2);display:flex;align-items:center;padding:0 24px;gap:20px;flex-shrink:0;height:88px;position:relative}
+#player-bar.hidden{display:none}
+#player-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(29,185,84,0.5),transparent)}
+.pb-left{display:flex;align-items:center;gap:14px;width:240px;flex-shrink:0}
+.pb-art-outer{width:54px;height:54px;flex-shrink:0;border-radius:50%;background:var(--surf2);border:2px solid rgba(255,255,255,0.1);overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.pb-art-outer.playing{border-color:rgba(29,185,84,0.5);box-shadow:0 0 18px rgba(29,185,84,0.25)}
+.pb-art{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pb-art.spinning{animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pb-art-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#333}
+.pb-info{flex:1;min-width:0}
+.pb-track{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-artist{font-size:11px;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-idle{font-size:12px;color:#444;font-style:italic}
+.pb-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pb-controls{display:flex;align-items:center;gap:6px}
+.pb-btn{background:transparent;border:none;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;transition:all .15s}
+.pb-btn:hover:not(:disabled){color:var(--txt);background:rgba(255,255,255,0.08)}
+.pb-btn:active:not(:disabled){transform:scale(.9)}
+.pb-btn:disabled{opacity:.3;cursor:not-allowed}
+.pb-btn-play{background:var(--green)!important;color:#000!important;width:46px!important;height:46px!important;box-shadow:0 0 0 0 rgba(29,185,84,0);transition:all .15s!important}
+.pb-btn-play:hover:not(:disabled){background:var(--green-h)!important;transform:scale(1.07)!important;box-shadow:0 0 20px rgba(29,185,84,.45)!important}
+.pb-btn-play.playing{animation:pulse-glow 2s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 10px rgba(29,185,84,.3)}50%{box-shadow:0 0 28px rgba(29,185,84,.65)}}
+.pb-btn-stop:hover:not(:disabled){color:var(--danger)!important;background:rgba(248,113,113,.1)!important}
+.pb-progress{display:flex;align-items:center;gap:8px;width:100%;max-width:480px}
+.pb-time{font-size:10px;color:#555;flex-shrink:0;min-width:30px;font-variant-numeric:tabular-nums}
+.pb-time:first-child{text-align:right}
+.pb-bar-wrap{flex:1;height:4px;background:#2a2a2a;border-radius:2px;cursor:pointer;position:relative;transition:height .15s}
+.pb-bar-wrap:hover{height:6px}
+.pb-bar-wrap:hover .pb-bar-thumb{opacity:1}
+.pb-bar-fill{height:100%;background:var(--green);border-radius:2px;pointer-events:none}
+.pb-bar-thumb{position:absolute;top:50%;right:-6px;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:#fff;opacity:0;pointer-events:none;transition:opacity .15s;box-shadow:0 0 4px rgba(0,0,0,.6)}
+.pb-right{display:flex;align-items:center;gap:8px;width:200px;flex-shrink:0;justify-content:flex-end}
+.pb-open-btn{background:transparent;border:1px solid rgba(29,185,84,0.35);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--green);cursor:pointer;transition:all .15s;white-space:nowrap}
+.pb-open-btn:hover{background:rgba(29,185,84,0.1);border-color:var(--green)}
+.pb-vol-icon{color:var(--txt2);flex-shrink:0;cursor:pointer;transition:color .15s}
+.pb-vol-icon:hover{color:var(--txt)}
+input[type=range].pb-vol{width:80px;height:4px;-webkit-appearance:none;background:transparent;cursor:pointer}
+input[type=range].pb-vol::-webkit-slider-runnable-track{height:4px;background:#333;border-radius:2px}
+input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:#fff;border-radius:50%;margin-top:-4px;box-shadow:0 0 4px rgba(0,0,0,.5)}
+.pb-eq{display:flex;align-items:flex-end;gap:2px;height:16px;opacity:0;transition:opacity .3s}
+.pb-eq.active{opacity:1}
+.pb-eq span{display:block;width:3px;background:var(--green);border-radius:1px;animation:eq .8s ease-in-out infinite alternate;height:4px}
+.pb-eq span:nth-child(1){animation-duration:.55s}
+.pb-eq span:nth-child(2){animation-duration:.85s;animation-delay:.1s}
+.pb-eq span:nth-child(3){animation-duration:.65s;animation-delay:.2s}
+.pb-eq span:nth-child(4){animation-duration:1.0s;animation-delay:.05s}
+@keyframes eq{from{height:3px}to{height:14px}}
+
+/* Body */
+.body{flex:1;display:flex;flex-direction:column;padding:14px 20px;gap:12px;overflow:hidden}
+
+/* Top bar (create + filter side by side) */
+.top-bar{display:flex;gap:12px;flex-shrink:0;flex-wrap:wrap}
+
+/* Create bar */
+.create-bar{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex-shrink:0;flex-wrap:wrap}
+.create-bar span{font-size:13px;font-weight:600;color:var(--txt2);white-space:nowrap}
+.create-bar input,.create-bar select{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;color:var(--txt);font-size:13px;outline:none;color-scheme:dark}
+.create-bar input:focus,.create-bar select:focus{border-color:var(--green)}
+
+/* Filter card */
+.filter-card{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex:1;min-width:0;flex-wrap:wrap}
+.filter-label{font-size:11px;font-weight:700;color:var(--txt2);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:5px}
+.filter-btns{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.filter-btn{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;white-space:nowrap}
+.filter-btn:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
+.filter-btn.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
+.filter-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px;flex-shrink:0}
+.view-toggle-card{flex:none;min-width:0}
+
+/* ── Day view ── */
+#playlists-grid.day-view{display:flex;flex-direction:column;gap:0;padding:0}
+.day-view-date-header{display:flex;align-items:center;gap:10px;padding:20px 20px 8px;font-size:13px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;position:sticky;top:0;background:var(--bg);z-index:10;backdrop-filter:blur(8px)}
+.day-view-date-header .dvdh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.day-view-date-header .dvdh-today{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700}
+.day-view-slot-body{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 20px 20px}
+.filter-slot-select{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;outline:none;appearance:none;-webkit-appearance:none}
+.filter-slot-select:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
+.filter-slot-select option{background:var(--surf);color:var(--txt)}
+.filter-slot-select.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
+.filter-custom-wrap{position:relative;display:inline-flex}
+.filter-custom-btn{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.filter-custom-btn:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
+.filter-custom-btn.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
+.filter-custom-inp{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;border:none;font-size:0;color-scheme:dark;z-index:1}
+.filter-result-count{margin-left:auto;font-size:11px;color:#555;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* Grid */
+#playlists-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;overflow-y:auto;flex:1;padding-right:2px;scrollbar-width:thin;scrollbar-color:#333 transparent;align-content:start}
+#playlists-grid::-webkit-scrollbar{width:5px}
+#playlists-grid::-webkit-scrollbar-thumb{background:#333;border-radius:99px}
+
+/* Empty */
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;color:var(--txt2);text-align:center}
+.empty-state svg{opacity:0.2}
+.empty-state p{font-size:14px;line-height:1.6}
+
+/* Card */
+.pl-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;transition:box-shadow 180ms,border-color 180ms;animation:fadeUp 200ms ease;min-width:0;width:100%}
+.pl-card:hover{border-color:rgba(255,255,255,0.16)}
+.pl-card.played:not(.card-active){opacity:0.65}
+.pl-card.card-active{border-color:rgba(29,185,84,0.55);box-shadow:0 0 0 1px rgba(29,185,84,0.2),0 4px 24px rgba(29,185,84,0.15);animation:fadeUp 200ms ease,card-active-pulse 2.5s ease-in-out infinite}
+@keyframes card-active-pulse{0%,100%{box-shadow:0 0 0 1px rgba(29,185,84,0.2),0 4px 24px rgba(29,185,84,0.12)}50%{box-shadow:0 0 0 2px rgba(29,185,84,0.35),0 6px 32px rgba(29,185,84,0.28)}}
+
+/* Now-playing pill in card header */
+.now-playing-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.35);border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;color:var(--green)}
+.eq-bars{display:inline-flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0}
+.eq-bar{width:3px;background:var(--green);border-radius:2px;animation:eq 0.6s ease-in-out infinite alternate}
+.eq-bar:nth-child(2){animation-delay:.15s}
+.eq-bar:nth-child(3){animation-delay:.3s}
+.eq-bar:nth-child(4){animation-delay:.45s}
+@keyframes eq{from{height:3px}to{height:13px}}
+
+/* Playing track row */
+.track-row.now-playing{background:rgba(29,185,84,0.09);border-left:3px solid var(--green);padding-left:9px}
+.track-row-eq{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:6px;width:18px;height:18px}
+.track-row-eq .disc-icon{animation:disc-spin 1.8s linear infinite;color:var(--green);display:flex;align-items:center;justify-content:center}
+@keyframes disc-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.slot-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;flex-shrink:0}
+.slot-tag.morning{background:linear-gradient(120deg,rgba(96,165,250,0.18),rgba(147,197,253,0.12));border:1px solid rgba(147,197,253,0.3);color:#93c5fd}
+.slot-tag.noon{background:linear-gradient(120deg,rgba(251,191,36,0.18),rgba(252,211,77,0.12));border:1px solid rgba(252,211,77,0.3);color:#fcd34d}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--bdr);gap:8px}
+.card-title .card-slot{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.card-title .card-date{font-size:11px;color:var(--txt2);margin-top:1px}
+.card-del-btn{background:transparent;border:1px dashed rgba(255,255,255,0.25);border-radius:8px;padding:5px 10px;color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;transition:all 150ms;display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+.card-del-btn:hover{border-color:var(--danger);color:var(--danger);background:rgba(248,113,113,0.08);border-style:solid}
+.badge{font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;white-space:nowrap;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;height:30px;border:1px solid var(--bdr);border-radius:var(--r);background:rgba(255,255,255,0.03);transition:background 150ms,border-color 150ms,color 150ms;width:100%}
+.badge-pending{color:var(--txt2);cursor:pointer}
+.badge-pending:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.18)}
+.badge-playing{background:rgba(29,185,84,0.12);border-color:rgba(29,185,84,0.4);color:var(--green);cursor:default}
+.badge-played{background:rgba(255,255,255,0.04);border-color:var(--bdr);color:var(--txt2);cursor:default;opacity:0.7}
+.card-actions-row{display:flex;align-items:stretch;gap:6px;margin:4px 8px 8px;padding:0}
+.card-play-btn{flex:1;height:30px;background:var(--green);color:#000;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;transition:background 120ms;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.card-play-btn:hover{background:var(--green-h)}
+.card-play-btn:disabled{opacity:0.5;cursor:not-allowed}
+.card-stop-btn{flex:1;height:30px;background:rgba(248,113,113,0.15);color:var(--danger);border:1px solid rgba(248,113,113,0.35);border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;transition:background 120ms;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.card-stop-btn:hover{background:rgba(248,113,113,0.28)}
+
+/* Tracks */
+.tracks{display:flex;flex-direction:column;padding:4px 6px;gap:1px;flex:1}
+.track-row{display:flex;align-items:center;gap:8px;padding:9px 6px;border-radius:8px;transition:background 110ms;cursor:default;min-width:0;overflow:hidden}
+.track-row:hover{background:var(--surf2)}
+.track-row[draggable=true]{cursor:grab}
+.track-row[draggable=true]:active{cursor:grabbing}
+.track-row.dragging{opacity:0.4;background:rgba(29,185,84,0.08);border:1px dashed rgba(29,185,84,0.4)}
+.track-row.drag-over{background:rgba(29,185,84,0.1);box-shadow:inset 0 2px 0 var(--green)}
+.drag-handle{color:#3a3a3a;font-size:16px;flex-shrink:0;width:14px;cursor:grab;line-height:1;user-select:none}
+.drag-handle:hover{color:#666}
+.track-art{width:40px;height:40px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surf2)}
+.track-art-ph{width:40px;height:40px;border-radius:5px;background:var(--surf2);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#3a3a3a}
+.track-info{flex:1;min-width:0}
+.track-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-artist{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+/* Card footer */
+.card-footer{border-top:1px solid var(--bdr);padding:7px;display:flex;flex-direction:column;gap:5px}
+.manage-music-btn{width:100%;height:30px;display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;padding:0 6px;color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;transition:all 150ms}
+.manage-music-btn:hover{border-color:var(--green);color:var(--green);background:rgba(29,185,84,0.05)}
+.manage-music-btn .count-badge{font-size:10px;background:rgba(255,255,255,0.08);border-radius:999px;padding:1px 7px}
+.manage-music-btn .count-badge.full{background:rgba(29,185,84,0.15);color:var(--green)}
+.card-toggle-played-btn{width:100%;height:30px;display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:1px dashed rgba(255,255,255,0.12);border-radius:8px;padding:0 6px;color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;transition:all 150ms}
+.card-toggle-played-btn:hover{border-color:rgba(148,163,184,0.5);color:var(--txt);background:rgba(255,255,255,0.05)}
+
+/* ── Music Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 150ms ease}
+.modal-overlay.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-card{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.7);animation:slideUp 180ms ease}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700}
+.modal-subtitle{font-size:11px;color:var(--txt2);margin-top:2px}
+.modal-close{background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt2);font-size:14px;transition:all 150ms}
+.modal-close:hover{background:rgba(248,113,113,0.15);color:var(--danger)}
+.modal-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#333 transparent}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:#333;border-radius:99px}
+.modal-section{padding:12px 14px}
+.modal-section-hd{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.modal-count-chip{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700}
+.modal-count-chip.full{background:rgba(29,185,84,0.2)}
+.modal-track-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;transition:background 110ms}
+.modal-track-row:hover{background:rgba(255,255,255,0.05)}
+.modal-track-num{font-size:11px;color:#555;width:16px;text-align:center;flex-shrink:0;font-variant-numeric:tabular-nums}
+.modal-track-art{width:38px;height:38px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surf2)}
+.modal-track-art-ph{width:38px;height:38px;border-radius:5px;background:var(--surf2);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#3a3a3a}
+.modal-track-info{flex:1;min-width:0}
+.modal-track-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-track-artist{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.modal-divider{height:1px;background:var(--bdr);margin:0 14px}
+.modal-search-wrap{padding:12px 14px;display:flex;gap:8px;border-top:1px solid var(--bdr);flex-shrink:0;background:var(--surf)}
+.modal-bulk-toggle-wrap{padding:6px 14px 10px;background:var(--surf);flex-shrink:0}
+.modal-bulk-toggle-btn{width:100%;background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;padding:7px;color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;transition:all 150ms;display:flex;align-items:center;justify-content:center;gap:6px}
+.modal-bulk-toggle-btn:hover{border-color:var(--green);color:var(--green);background:rgba(29,185,84,0.05)}
+.modal-bulk-toggle-btn.active{border-color:rgba(29,185,84,0.4);color:var(--green);background:rgba(29,185,84,0.08);border-style:solid}
+.modal-bulk-wrap{padding:10px 14px;border-top:1px solid var(--bdr);background:var(--surf);flex-shrink:0}
+.modal-bulk-inp{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;color:var(--txt);font-size:12px;outline:none;resize:none;height:90px;font-family:inherit;line-height:1.5}
+.modal-bulk-inp:focus{border-color:var(--green)}
+.modal-bulk-actions{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.modal-bulk-hint{font-size:11px;color:var(--txt2)}
+.modal-bulk-hint.warn{color:#fbbf24}
+.modal-bulk-hint.err{color:var(--danger)}
+.modal-search-inp{flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:9px;padding:8px 12px;color:var(--txt);font-size:12px;outline:none}
+.modal-search-inp:focus{border-color:var(--green)}
+.modal-search-btn{background:var(--green);border:none;border-radius:9px;padding:8px 14px;color:#000;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
+.modal-search-btn:hover{background:var(--green-h)}
+.modal-search-btn:disabled{opacity:.5;cursor:not-allowed}
+.modal-results{padding:0 8px 8px}
+.drop-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background 100ms;border-radius:8px}
+.drop-item:hover{background:rgba(255,255,255,0.07)}
+.drop-art{width:36px;height:36px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surf2)}
+.drop-art-ph{width:36px;height:36px;border-radius:5px;background:var(--surf2);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#3a3a3a}
+.drop-info{flex:1;min-width:0}
+.drop-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drop-artist{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drop-add-btn{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.drop-add-btn:hover{background:rgba(29,185,84,0.25)}
+.drop-add-btn:disabled{opacity:.4;cursor:not-allowed}
+.drop-msg{padding:16px;font-size:12px;color:var(--txt2);text-align:center}
+
+/* ── Generic dialog (settings / about / guide) ── */
+.dlg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 160ms ease}
+.dlg-overlay.hidden{display:none}
+.dlg-box{background:var(--surf);border:1px solid var(--bdr);border-radius:18px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.75);animation:slideUp 180ms ease;position:relative}
+
+/* Settings dialog */
+.settings-dlg-box{max-width:440px}
+.dlg-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bdr)}
+.dlg-title{font-size:15px;font-weight:700}
+.dlg-close{background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt2);font-size:14px;transition:all 150ms}
+.dlg-close:hover{background:rgba(248,113,113,0.15);color:var(--danger)}
+.dlg-body{padding:20px}
+
+/* About dialog — macOS style */
+.about-dlg-box{max-width:360px;text-align:center;padding-bottom:28px}
+.about-avatar-wrap{width:96px;height:96px;border-radius:50%;overflow:hidden;margin:28px auto 16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);border:3px solid var(--bdr)}
+.about-avatar-wrap img{width:100%;height:100%;object-fit:cover}
+.about-app-name{font-size:22px;font-weight:700;letter-spacing:-0.3px;margin-bottom:4px}
+.about-app-sub{font-size:12px;color:var(--txt2);margin-bottom:20px}
+.about-divider{height:1px;background:var(--bdr);margin:0 24px 20px}
+.about-dev-name{font-size:14px;font-weight:600;margin-bottom:6px}
+.about-desc{font-size:12px;color:var(--txt2);line-height:1.7;padding:0 24px;margin-bottom:20px}
+.about-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:4px 14px;font-size:11px;font-weight:600;margin-bottom:4px}
+
+/* Guide dialog */
+.guide-dlg-box{max-width:460px}
+.guide-list{display:flex;flex-direction:column;gap:14px}
+.guide-step{display:flex;gap:14px;align-items:flex-start}
+.guide-step-num{width:26px;height:26px;border-radius:50%;background:rgba(29,185,84,0.15);border:1px solid rgba(29,185,84,0.35);color:var(--green);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.guide-step-text{flex:1}
+.guide-step-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.guide-step-desc{font-size:12px;color:var(--txt2);line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="hd">
+  <div class="hd-logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+    <h1>Spotify Playlist Her</h1>
+  </div>
+  <div class="hd-right">
+    <span class="status-pill off" id="login-status">⚠ Chưa đăng nhập</span>
+    <button class="btn btn-outline btn-xs" id="about-btn" title="Thông tin">ⓘ Thông tin</button>
+    <button class="btn btn-outline btn-xs" id="guide-btn" title="Hướng dẫn sử dụng">❓ Hướng dẫn</button>
+    <button class="btn btn-outline btn-xs" id="settings-btn" title="Cài đặt">⚙ Cài đặt</button>
+
+    <!-- Logged out: login button -->
+    <button class="btn btn-green btn-xs" id="login-btn">Đăng nhập Spotify</button>
+
+    <!-- Logged in: avatar + dropdown -->
+    <div class="user-menu hidden" id="user-menu">
+      <button class="user-btn" id="user-btn">
+        <div class="user-avatar-ph" id="user-avatar-ph">S</div>
+        <img class="user-avatar hidden" id="user-avatar" src="" alt="" />
+        <span class="user-name" id="user-name">Spotify</span>
+        <svg class="user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="dropdown-user-info">
+          <div class="dropdown-user-avatar-ph" id="dd-avatar-ph">S</div>
+          <img class="dropdown-user-avatar hidden" id="dd-avatar" src="" alt="" />
+          <div>
+            <div class="dropdown-user-name" id="dd-name">Spotify</div>
+            <div class="dropdown-user-label">Tài khoản Spotify</div>
+          </div>
+        </div>
+        <button class="dropdown-item" id="view-profile-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          Xem hồ sơ trên Spotify
+        </button>
+        <button class="dropdown-item danger" id="logout-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          Đăng xuất
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Settings dialog -->
+<div class="dlg-overlay hidden" id="settings-dialog">
+  <div class="dlg-box settings-dlg-box">
+    <div class="dlg-hd">
+      <div class="dlg-title">⚙ Cài đặt</div>
+      <button class="dlg-close" id="settings-dlg-close">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="settings-list">
+        <div class="settings-item">
+          <label>Spotify Client ID</label>
+          <input type="text" id="inp-client-id" placeholder="Nhập Client ID" autocomplete="off" />
+        </div>
+        <div class="settings-item">
+          <label>Spotify Client Secret</label>
+          <input type="password" id="inp-client-secret" placeholder="Nhập Client Secret" />
+        </div>
+        <div class="settings-item-row">
+          <div class="settings-item" style="max-width:160px">
+            <label>Giới hạn bài / card</label>
+            <input type="number" id="inp-max-tracks" min="1" max="10" value="5" />
+          </div>
+          <div class="settings-item" style="flex:none">
+            <label>Giao diện</label>
+            <div class="theme-toggle">
+              <button class="theme-btn active" id="theme-dark">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+                Tối
+              </button>
+              <button class="theme-btn" id="theme-light">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2v-2H2v2zm18 0h2v-2h-2v2zM11 2v2h2V2h-2zm0 18v2h2v-2h-2zM5.99 4.58l-1.42 1.41 1.06 1.06 1.41-1.41-1.05-1.06zm12.37 12.37l-1.41 1.41 1.06 1.06 1.41-1.41-1.06-1.06zm1.06-10.96l-1.06-1.06-1.41 1.41 1.06 1.06 1.41-1.41zM7.05 18.36l-1.06-1.06-1.41 1.41 1.06 1.06 1.41-1.41z"/></svg>
+                Sáng
+              </button>
+              <button class="theme-btn" id="theme-system">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v2h12v-2l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/></svg>
+                Hệ thống
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-footer">
+          <span class="settings-hint">
+            Redirect URI: <code>http://127.0.0.1:8888/callback</code>
+            <button onclick="navigator.clipboard.writeText('http://127.0.0.1:8888/callback').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',1500)})" style="margin-left:6px;background:rgba(29,185,84,0.15);border:1px solid rgba(29,185,84,0.3);color:#1DB954;border-radius:5px;padding:1px 7px;font-size:10px;cursor:pointer">Copy</button>
+          </span>
+          <button class="btn btn-green btn-xs" id="save-creds-btn">Lưu cài đặt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- About dialog — macOS style -->
+<div class="dlg-overlay hidden" id="about-dialog">
+  <div class="dlg-box about-dlg-box">
+    <button class="dlg-close" id="about-dlg-close" style="position:absolute;top:12px;right:12px">✕</button>
+    <div class="about-avatar-wrap">
+      <img src="/image/download.jpeg" alt="Avatar" />
+    </div>
+    <div class="about-app-name">Spotify Playlist Her</div>
+    <div class="about-app-sub">Tự động phát nhạc theo lịch</div>
+    <div class="about-divider"></div>
+    <div class="about-dev-name">Bằng Trần · Kona Trần</div>
+    <div class="about-desc">
+      Sản phẩm được thực hiện 100% do AI.<br/>
+      Cám ơn bạn đã sử dụng ❤️
+    </div>
+    <div class="about-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      Powered by Spotify API
+    </div>
+  </div>
+</div>
+
+<!-- Guide dialog -->
+<div class="dlg-overlay hidden" id="guide-dialog">
+  <div class="dlg-box guide-dlg-box">
+    <div class="dlg-hd">
+      <div class="dlg-title">❓ Hướng dẫn sử dụng</div>
+      <button class="dlg-close" id="guide-dlg-close">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="guide-list">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">
+            <div class="guide-step-title">Cấu hình Spotify API</div>
+            <div class="guide-step-desc">Vào <strong>Cài đặt</strong>, nhập <em>Client ID</em> và <em>Client Secret</em> từ Spotify Developer Dashboard. Redirect URI: <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">http://127.0.0.1:8888/callback</code></div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">
+            <div class="guide-step-title">Đăng nhập Spotify</div>
+            <div class="guide-step-desc">Nhấn <strong>Đăng nhập Spotify</strong> và hoàn tất xác thực trên trình duyệt. Tài khoản sẽ được lưu để tự động đăng nhập lần sau.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">
+            <div class="guide-step-title">Tạo card playlist</div>
+            <div class="guide-step-desc">Chọn ngày, chọn khung giờ (9h30 hoặc 13h00) rồi nhấn <strong>+ Tạo</strong>. Mỗi khung giờ chỉ có thể tạo một card.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text">
+            <div class="guide-step-title">Thêm bài hát vào card</div>
+            <div class="guide-step-desc">Nhấn <strong>Quản lý nhạc</strong> trên card, tìm kiếm bài hát hoặc paste danh sách link từ Spotify. Tối đa 5 bài / card. Có thể kéo thả để sắp xếp thứ tự.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-text">
+            <div class="guide-step-title">Phát nhạc</div>
+            <div class="guide-step-desc">Nhấn <strong>Phát ngay</strong> để phát ngay lập tức, hoặc để app tự động phát đúng giờ đã lên lịch. Spotify phải đang mở trên thiết bị.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="body">
+  <div class="top-bar">
+    <!-- Create card -->
+    <div class="create-bar">
+      <span>Tạo playlist</span>
+      <input type="date" id="inp-date" />
+      <select id="inp-slot">
+        <option value="09:30">9h30</option>
+        <option value="13:00">13h00</option>
+      </select>
+      <button class="btn btn-green btn-xs" id="create-btn">+ Tạo</button>
+    </div>
+    <!-- Filter card -->
+    <div class="filter-card">
+      <span class="filter-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04a1 1 0 0 0-.79 1.61z"/></svg>
+        Lọc
+      </span>
+      <div class="filter-btns">
+        <button class="filter-btn active" id="filter-all">Tất cả</button>
+        <button class="filter-btn" id="filter-today" data-filter="today">Hôm nay</button>
+        <div class="filter-custom-wrap">
+          <button class="filter-custom-btn" id="filter-custom-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+            <span id="filter-custom-label">Chọn ngày</span>
+          </button>
+          <input type="date" class="filter-custom-inp" id="filter-date-inp" />
+        </div>
+        <div class="filter-sep"></div>
+        <select class="filter-slot-select" id="filter-slot-select">
+          <option value="">⏰ Tất cả giờ</option>
+          <option value="09:30">🌅 9h30</option>
+          <option value="13:00">☀️ 13h00</option>
+        </select>
+      </div>
+      <span class="filter-result-count" id="filter-count"></span>
+    </div>
+    <!-- View toggle card -->
+    <div class="filter-card view-toggle-card">
+      <span class="filter-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h4V5H3v4zm0 5h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zM8 9h4V5H8v4zm5-4v4h4V5h-4zm5 9h-4v4h4v-4zM8 19h4v-4H8v4zm-5 0h4v-4H3v4z"/></svg>
+        View
+      </span>
+      <select class="filter-slot-select" id="view-select">
+        <option value="grid">☰ Mặc định</option>
+        <option value="day">📅 Theo ngày</option>
+      </select>
+    </div>
+  </div>
+  <div id="playlists-grid"></div>
+</div>
+
+<!-- Player Bar (Spotify Connect) -->
+<div id="player-bar" class="hidden">
+  <div class="pb-left">
+    <div class="pb-art-outer" id="pb-art-outer">
+      <div class="pb-art-ph">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      </div>
+    </div>
+    <div class="pb-info">
+      <div class="pb-idle" id="pb-track-name">Chưa phát bài nào</div>
+      <div class="pb-artist hidden" id="pb-artist"></div>
+      <div class="pb-eq" id="pb-eq"><span></span><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="pb-center">
+    <div class="pb-controls">
+      <button class="pb-btn" id="pb-prev" title="Bài trước" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="pb-btn pb-btn-stop" id="pb-stop" title="Dừng">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+      </button>
+      <button class="pb-btn pb-btn-play" id="pb-playpause" title="Play / Pause">
+        <svg id="pb-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pb-pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <button class="pb-btn" id="pb-next" title="Bài tiếp" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+      </button>
+    </div>
+    <div class="pb-progress">
+      <span class="pb-time" id="pb-current">0:00</span>
+      <div class="pb-bar-wrap" id="pb-bar-wrap">
+        <div class="pb-bar-fill" id="pb-bar-fill" style="width:0%"></div>
+        <div class="pb-bar-thumb" id="pb-bar-thumb"></div>
+      </div>
+      <span class="pb-time" id="pb-total">0:00</span>
+    </div>
+  </div>
+
+  <div class="pb-right">
+    <button class="pb-open-btn" id="pb-open-spotify" title="Mở Spotify">🎵 Mở Spotify</button>
+    <svg class="pb-vol-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    <input type="range" class="pb-vol" id="pb-volume" min="0" max="100" value="80" />
+  </div>
+</div>
+
+<!-- Music Modal -->
+<div class="modal-overlay hidden" id="music-modal">
+  <div class="modal-card">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="modal-title">Quản lý nhạc</div>
+        <div class="modal-subtitle" id="modal-subtitle">Playlist</div>
+      </div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-hd">
+          Danh sách nhạc
+          <span class="modal-count-chip" id="modal-count-chip">0/5</span>
+        </div>
+        <div id="modal-track-list"></div>
+        <div class="drop-msg" id="modal-empty-msg" style="display:none">Chưa có bài nào. Tìm kiếm để thêm bên dưới.</div>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-section">
+        <div class="modal-section-hd">Thêm bài hát</div>
+        <div class="modal-results" id="modal-results"></div>
+      </div>
+    </div>
+    <div class="modal-search-wrap">
+      <input type="text" class="modal-search-inp" id="modal-search-inp" placeholder="Tên bài hát hoặc link Spotify..." />
+      <button class="modal-search-btn" id="modal-search-btn">Tìm</button>
+    </div>
+    <div class="modal-bulk-wrap hidden" id="modal-bulk-wrap">
+      <textarea class="modal-bulk-inp" id="modal-bulk-inp" placeholder="Dán danh sách link Spotify từ Excel, mỗi link một dòng...&#10;https://open.spotify.com/track/...&#10;https://open.spotify.com/track/..."></textarea>
+      <div class="modal-bulk-actions">
+        <span class="modal-bulk-hint" id="modal-bulk-hint"></span>
+        <button class="modal-search-btn" id="modal-bulk-add-btn">Thêm tất cả</button>
+      </div>
+    </div>
+    <div class="modal-bulk-toggle-wrap">
+      <button class="modal-bulk-toggle-btn" id="modal-bulk-toggle-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 16h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V8z"/></svg>
+        Thêm nhiều nhạc từ danh sách
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="./renderer.js"></script>
+</body>

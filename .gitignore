@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment variables (credentials)
+.env
+
+# Build outputs
+dist/
+out/
+build/
+release/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Electron cache
+.electron/

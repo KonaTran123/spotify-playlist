@@ -1,0 +1,57 @@
+{
+  "name": "spotify-playlist-her",
+  "version": "1.0.0",
+  "productName": "Spotify Playlist Her",
+  "description": "Spotify Playlist Her - Auto playlist scheduler",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win",
+    "release": "electron-builder --mac --win --publish always"
+  },
+  "build": {
+    "appId": "com.konatran.spotify-playlist-her",
+    "productName": "Spotify Playlist Her",
+    "icon": "image/icons8-spotify-100.png",
+    "files": [
+      "src/**/*",
+      "image/**/*",
+      "config.js",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "image/icons8-spotify-100.png"
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "image/icons8-spotify-100.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "image/icons8-spotify-100.png",
+      "installerHeaderIcon": "image/icons8-spotify-100.png"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "KonaTran123",
+      "repo": "spotify-playlist"
+    }
+  },
+  "keywords": [],
+  "author": "Bằng Trần (Kona Trần)",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^40.6.1",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "@distube/ytdl-core": "^4.15.9",
+    "dotenv": "^17.3.1",
+    "play-dl": "^1.9.7"
+  }
+}

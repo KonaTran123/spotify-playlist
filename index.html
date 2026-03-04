@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YouTube Music Auto Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: radial-gradient(circle at top left, #1f2933, #050609);
+        color: #f9fafb;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shell {
+        width: 960px;
+        max-width: 100%;
+        padding: 32px;
+        border-radius: 24px;
+        background: rgba(15, 17, 21, 0.92);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        backdrop-filter: blur(22px);
+        animation: fade-in 400ms ease-out;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+        gap: 24px;
+        align-items: flex-start;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 14px;
+        color: #9ca3af;
+        margin-top: 4px;
+      }
+      .card-form {
+        border-radius: 20px;
+        padding: 20px 18px;
+        background: radial-gradient(circle at top left, #111827, #020617);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .form-row {
+        display: flex;
+        gap: 12px;
+      }
+      .form-row label {
+        flex: 1;
+        font-size: 12px;
+        color: #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      input, select {
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.9);
+        padding: 6px 10px;
+        color: #e5e7eb;
+        font-size: 12px;
+        outline: none;
+      }
+      input:focus, select:focus {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+      }
+      .url-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .url-grid label {
+        font-size: 12px;
+        color: #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .url-grid input {
+        font-size: 11px;
+      }
+      .primary-btn {
+        align-self: flex-end;
+        border-radius: 999px;
+        border: none;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 500;
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.5);
+        transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+      }
+      .primary-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.65);
+        filter: brightness(1.05);
+      }
+      .primary-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+      }
+      .cards {
+        display: grid;
+        gap: 14px;
+        max-height: 460px;
+        padding-left: 4px;
+        overflow-y: auto;
+      }
+      .playlist-card {
+        position: relative;
+        border-radius: 20px;
+        padding: 14px 14px 10px 14px;
+        background: radial-gradient(circle at top left, #111827, #020617);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+        transition: transform 140ms ease, box-shadow 140ms ease, opacity 200ms ease, filter 200ms ease;
+      }
+      .playlist-card:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 22px 50px rgba(15, 23, 42, 1);
+      }
+      .playlist-card--played {
+        opacity: 0.55;
+        filter: saturate(0.8) grayscale(0.25);
+      }
+      .playlist-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+      }
+      .playlist-card__slot {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .playlist-card__date {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+      .playlist-card__status {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.08);
+        color: #7dd3fc;
+        border: 1px solid rgba(56, 189, 248, 0.6);
+      }
+      .playlist-card--played .playlist-card__status {
+        background: rgba(34, 197, 94, 0.08);
+        color: #bbf7d0;
+        border-color: rgba(34, 197, 94, 0.7);
+      }
+      .playlist-card__tracks {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .playlist-card__track {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 14px;
+        padding: 6px 8px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(31, 41, 55, 0.9);
+      }
+      .track-thumb {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+        flex-shrink: 0;
+      }
+      .track-thumb--empty {
+        background: radial-gradient(circle at top left, #1f2937, #020617);
+      }
+      .track-meta {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .track-title {
+        font-size: 12px;
+      }
+      .track-url {
+        font-size: 10px;
+        color: #9ca3af;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .placeholder {
+        border-radius: 20px;
+        border: 1px dashed rgba(148, 163, 184, 0.4);
+        padding: 24px;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1 class="title">YouTube Music Auto Player</h1>
+          <p class="subtitle">Lên lịch phát playlist YouTube Music lúc 9h30 và 13h mỗi ngày.</p>
+        </div>
+      </header>
+
+      <section class="layout">
+        <form id="card-form" class="card-form">
+          <h2 class="section-title">Tạo card mới</h2>
+          <div class="form-row">
+            <label>
+              Ngày
+              <input id="date" type="date" required />
+            </label>
+            <label>
+              Khung giờ
+              <select id="slot" required>
+                <option value="09:30">9h30</option>
+                <option value="13:00">13h</option>
+              </select>
+            </label>
+          </div>
+          <div class="url-grid">
+            <label>URL bài 1<input type="url" class="url-input" placeholder="https://music.youtube.com/..." /></label>
+            <label>URL bài 2<input type="url" class="url-input" placeholder="https://music.youtube.com/..." /></label>
+            <label>URL bài 3<input type="url" class="url-input" placeholder="https://music.youtube.com/..." /></label>
+            <label>URL bài 4<input type="url" class="url-input" placeholder="https://music.youtube.com/..." /></label>
+          </div>
+          <button type="submit" class="primary-btn">Lưu card</button>
+        </form>
+
+        <section class="cards" id="cards"></section>
+      </section>
+    </main>
+    <script src="./renderer.js" type="module"></script>
+  </body>
+</html>
