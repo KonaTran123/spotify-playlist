@@ -32,7 +32,9 @@
           ]
         }
       ],
-      "icon": "image/icon-512.png"
+      "icon": "image/icon-512.png",
+      "identity": null,
+      "gatekeeperAssess": false
     },
     "win": {
       "target": [

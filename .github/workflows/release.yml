@@ -18,6 +18,7 @@ jobs:
       - name: Build macOS (dmg)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npm run build:mac
       - name: Upload dmg artifact
         uses: actions/upload-artifact@v4
