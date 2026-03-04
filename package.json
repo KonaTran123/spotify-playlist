@@ -28,13 +28,13 @@
     },
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "image/icon-512.png"
+      "icon": "image/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "image/icon-512.png",
-      "installerHeaderIcon": "image/icon-512.png"
+      "installerIcon": "image/icon.ico",
+      "installerHeaderIcon": "image/icon.ico"
     },
     "publish": {
       "provider": "github",
