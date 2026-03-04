@@ -1,8 +1,8 @@
 {
-  "name": "spotify-playlist-her",
+  "name": "cadence",
   "version": "1.0.0",
-  "productName": "Spotify Playlist Her",
-  "description": "Spotify Playlist Her - Auto playlist scheduler",
+  "productName": "Cadence",
+  "description": "Cadence - Auto playlist scheduler",
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
@@ -12,8 +12,8 @@
     "release": "electron-builder --mac --win --publish always"
   },
   "build": {
-    "appId": "com.konatran.spotify-playlist-her",
-    "productName": "Spotify Playlist Her",
+    "appId": "com.konatran.cadence",
+    "productName": "Cadence",
     "icon": "image/icon-512.png",
     "files": [
       "src/**/*",
@@ -23,11 +23,26 @@
     ],
     "mac": {
       "category": "public.app-category.music",
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "icon": "image/icon-512.png"
     },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "image/icon.ico"
     },
     "nsis": {
@@ -51,7 +66,9 @@
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.15.9",
+    "choices.js": "^11.1.0",
     "dotenv": "^17.3.1",
+    "flatpickr": "^4.6.13",
     "play-dl": "^1.9.7"
   }
 }

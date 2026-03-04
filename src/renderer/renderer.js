@@ -894,7 +894,26 @@ async function saveCredentials() {
 
 // ── Bootstrap ──
 async function bootstrap() {
-  document.getElementById('inp-date').value = todayISO();
+  // Initialize Flatpickr on create-bar date input
+  const inpDateEl = document.getElementById('inp-date');
+  const fpCreate = flatpickr(inpDateEl, {
+    dateFormat: 'Y-m-d',
+    defaultDate: todayISO(),
+    locale: typeof flatpickr.l10ns.vn !== 'undefined' ? 'vn' : 'default',
+    disableMobile: true,
+  });
+
+  // Initialize Choices.js on slot select (create bar)
+  const inpSlotEl = document.getElementById('inp-slot');
+  new Choices(inpSlotEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
+
+  // Initialize Choices.js on filter slot select
+  const filterSlotEl = document.getElementById('filter-slot-select');
+  const choicesSlot = new Choices(filterSlotEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
+
+  // Initialize Choices.js on view select
+  const viewSelectEl = document.getElementById('view-select');
+  new Choices(viewSelectEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
 
   if (api) {
     const cfg = await api.getConfig();
@@ -1127,7 +1146,6 @@ async function bootstrap() {
   if (slotSelect) {
     slotSelect.addEventListener('change', () => {
       state.filter.slot = slotSelect.value || null;
-      slotSelect.classList.toggle('active', !!slotSelect.value);
       renderAll();
     });
   }
@@ -1138,16 +1156,26 @@ async function bootstrap() {
     renderAll();
   });
 
-  // Custom date button: clicks open the date input
+  // Custom date button: opens Flatpickr calendar
   const customBtn = document.getElementById('filter-custom-btn');
-  const dateInp = document.getElementById('filter-date-inp');
-  if (customBtn && dateInp) {
-    // Input overlays the button via position:absolute — listen on input directly
-    dateInp.addEventListener('click', () => { try { dateInp.showPicker(); } catch(e) {} });
-    dateInp.value = todayISO();
-    dateInp.addEventListener('change', () => {
-      if (dateInp.value) setFilter('custom', dateInp.value);
+  const dateInpEl = document.getElementById('filter-date-inp');
+  if (customBtn && dateInpEl) {
+    const fpFilter = flatpickr(dateInpEl, {
+      dateFormat: 'Y-m-d',
+      defaultDate: todayISO(),
+      locale: typeof flatpickr.l10ns.vn !== 'undefined' ? 'vn' : 'default',
+      disableMobile: true,
+      appendTo: document.body,
+      onChange: function(_dates, dateStr) {
+        if (dateStr) {
+          setFilter('custom', dateStr);
+          const label = document.getElementById('filter-custom-label');
+          if (label) label.textContent = dateStr;
+          customBtn.classList.add('active');
+        }
+      },
     });
+    customBtn.addEventListener('click', () => fpFilter.open());
   }
 
   // ── Theme toggle ──

@@ -343,7 +343,7 @@ function createWindow(port) {
     height: 820,
     minWidth: 900,
     minHeight: 620,
-    title: 'Spotify Playlist Her',
+    title: 'Cadence',
     icon: path.join(__dirname, '../../image/icons8-spotify-100.png'),
     backgroundColor: '#0d0d0d',
     webPreferences: {
