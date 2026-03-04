@@ -183,10 +183,10 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 @keyframes eq{from{height:3px}to{height:14px}}
 
 /* Body */
-.body{flex:1;display:flex;flex-direction:column;padding:14px 20px;gap:12px;overflow:hidden}
+.body{flex:1;display:flex;flex-direction:column;padding:14px 20px;gap:12px;overflow:visible}
 
 /* Top bar (create + filter side by side) */
-.top-bar{display:flex;gap:12px;flex-shrink:0;flex-wrap:wrap}
+.top-bar{display:flex;gap:12px;flex-shrink:0;flex-wrap:wrap;overflow:visible;position:relative;z-index:100}
 
 /* Create bar */
 .create-bar{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex-shrink:0;flex-wrap:wrap}
@@ -195,7 +195,7 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .create-bar input:focus,.create-bar select:focus{border-color:var(--green)}
 
 /* Filter card */
-.filter-card{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex:1;min-width:0;flex-wrap:wrap}
+.filter-card{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex:1;min-width:0;flex-wrap:wrap;overflow:visible}
 .filter-label{font-size:11px;font-weight:700;color:var(--txt2);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:5px}
 .filter-btns{display:flex;gap:5px;flex-wrap:wrap;flex:1}
 .filter-btn{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;white-space:nowrap}
@@ -400,17 +400,18 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .numInputWrapper:hover,.flatpickr-current-month .numInput:hover{background:rgba(255,255,255,0.05)!important}
 .flatpickr-current-month select{color:var(--txt)!important;background:transparent!important}
 /* ── Choices.js overrides ── */
-.choices{margin:0!important;font-family:inherit!important}
-.choices__inner{background:rgba(255,255,255,0.05)!important;border:1px solid transparent!important;border-radius:999px!important;padding:4px 14px 4px 14px!important;min-height:unset!important;font-size:12px!important;font-weight:600!important;color:var(--txt2)!important;transition:all .15s!important;display:flex!important;align-items:center!important;min-width:80px}
+.choices{margin:0!important;font-family:inherit!important;position:relative!important}
+.choices__inner{background:rgba(255,255,255,0.05)!important;border:1px solid transparent!important;border-radius:999px!important;padding:5px 32px 5px 14px!important;min-height:unset!important;font-size:12px!important;font-weight:600!important;color:var(--txt2)!important;transition:all .15s!important;display:flex!important;align-items:center!important;min-width:80px;cursor:pointer}
 .choices__inner:hover,.choices.is-open .choices__inner{background:rgba(255,255,255,0.08)!important;border-color:rgba(255,255,255,0.12)!important;color:var(--txt)!important}
 .choices[data-type*="select-one"] .choices__inner::after,.choices__list--dropdown .choices__item--selectable::after{display:none!important}
-.choices[data-type*="select-one"]::after{border-color:var(--txt2) transparent transparent transparent!important;right:12px!important}
-.choices__list--dropdown,.choices__list[aria-expanded]{background:var(--surf)!important;border:1px solid var(--bdr)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,0.5)!important;overflow:hidden!important;z-index:999!important;top:calc(100% + 4px)!important}
+.choices[data-type*="select-one"]::after{content:'';border:4px solid transparent!important;border-top-color:var(--txt2)!important;position:absolute!important;right:12px!important;top:50%!important;transform:translateY(-25%)!important;pointer-events:none!important;transition:transform .15s!important}
+.choices.is-open[data-type*="select-one"]::after{border-top-color:var(--txt)!important;transform:translateY(-75%) rotate(180deg)!important}
+.choices__list--dropdown,.choices__list[aria-expanded]{background:var(--surf)!important;border:1px solid var(--bdr)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,0.5)!important;overflow:hidden!important;z-index:9999!important;top:calc(100% + 4px)!important;min-width:100%!important}
 .choices__list--dropdown .choices__item{font-size:13px!important;color:var(--txt2)!important;padding:9px 14px!important;transition:all .1s!important}
 .choices__list--dropdown .choices__item:hover,.choices__list--dropdown .choices__item.is-highlighted{background:rgba(255,255,255,0.06)!important;color:var(--txt)!important}
 .choices__list--dropdown .choices__item.is-selected{color:var(--green)!important;font-weight:700!important}
 .choices__list--single{padding:0!important;display:flex!important;align-items:center!important}
-.choices__list--single .choices__item{color:var(--txt2)!important;font-size:12px!important;font-weight:600!important}
+.choices__list--single .choices__item{color:var(--txt2)!important;font-size:12px!important;font-weight:600!important;white-space:nowrap}
 .choices.is-open .choices__list--single .choices__item,.choices__inner:focus-within .choices__list--single .choices__item{color:var(--txt)!important}
 </style>
 <link rel="stylesheet" href="/lib/flatpickr.min.css" />

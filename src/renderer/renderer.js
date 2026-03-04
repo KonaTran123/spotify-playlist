@@ -896,11 +896,13 @@ async function saveCredentials() {
 async function bootstrap() {
   // Initialize Flatpickr on create-bar date input
   const inpDateEl = document.getElementById('inp-date');
-  const fpCreate = flatpickr(inpDateEl, {
+  flatpickr(inpDateEl, {
     dateFormat: 'Y-m-d',
     defaultDate: todayISO(),
     locale: typeof flatpickr.l10ns.vn !== 'undefined' ? 'vn' : 'default',
     disableMobile: true,
+    appendTo: document.body,
+    position: 'auto',
   });
 
   // Initialize Choices.js on slot select (create bar)
