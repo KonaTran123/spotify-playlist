@@ -14,7 +14,7 @@
   "build": {
     "appId": "com.konatran.spotify-playlist-her",
     "productName": "Spotify Playlist Her",
-    "icon": "image/icons8-spotify-100.png",
+    "icon": "image/icon-512.png",
     "files": [
       "src/**/*",
       "image/**/*",
@@ -24,17 +24,17 @@
     "mac": {
       "category": "public.app-category.music",
       "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-      "icon": "image/icons8-spotify-100.png"
+      "icon": "image/icon-512.png"
     },
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "image/icons8-spotify-100.png"
+      "icon": "image/icon-512.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "image/icons8-spotify-100.png",
-      "installerHeaderIcon": "image/icons8-spotify-100.png"
+      "installerIcon": "image/icon-512.png",
+      "installerHeaderIcon": "image/icon-512.png"
     },
     "publish": {
       "provider": "github",
