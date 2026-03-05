@@ -132,7 +132,8 @@ html.theme-system .user-btn:hover{border-color:rgba(255,255,255,0.25);background
 .hint code{color:#888;user-select:all}
 
 /* Player Bar */
-#player-bar{background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);border-top:1px solid rgba(29,185,84,0.2);display:flex;align-items:center;padding:0 24px;gap:20px;flex-shrink:0;height:88px;position:relative}
+#player-bar{background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);border-top:1px solid rgba(29,185,84,0.2);display:flex;align-items:center;padding:0 24px;gap:20px;flex-shrink:0;height:88px;position:relative;transition:transform 0.4s ease,opacity 0.4s ease;transform:translateY(0);opacity:1}
+#player-bar.hiding{transform:translateY(100%);opacity:0}
 #player-bar.hidden{display:none}
 #player-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(29,185,84,0.5),transparent)}
 .pb-left{display:flex;align-items:center;gap:14px;width:240px;flex-shrink:0}

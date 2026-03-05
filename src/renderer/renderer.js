@@ -143,7 +143,13 @@ function updatePlayerBarIdle() {
     if (pl) rerenderCard(pl);
   }
   const bar = document.getElementById('player-bar');
-  if (bar) bar.classList.add('hidden');
+  if (bar && !bar.classList.contains('hidden')) {
+    bar.classList.add('hiding');
+    setTimeout(() => {
+      bar.classList.remove('hiding');
+      bar.classList.add('hidden');
+    }, 400);
+  }
   state.currentTrackUri = null;
   updateNowPlayingIndicators();
   updatePlayPauseUI(false);
@@ -341,7 +347,6 @@ function updateLoginUI(loggedIn, profile) {
     userMenu.classList.add('hidden');
     stopPolling();
     updatePlayerBarIdle();
-    document.getElementById('player-bar').classList.add('hidden');
   }
 }
 
@@ -694,7 +699,10 @@ async function handleStop(id) {
   state.activePlaylistId = null;
   state.currentTrackUri = null;
   const bar = document.getElementById('player-bar');
-  if (bar) bar.classList.add('hidden');
+  if (bar && !bar.classList.contains('hidden')) {
+    bar.classList.add('hiding');
+    setTimeout(() => { bar.classList.remove('hiding'); bar.classList.add('hidden'); }, 400);
+  }
   updateNowPlayingIndicators();
   updatePlayPauseUI(false);
   if (pl) rerenderCard(pl);
