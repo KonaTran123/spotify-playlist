@@ -485,8 +485,7 @@ function buildCard(pl) {
     trackList.appendChild(buildTrackRow(track, pl, idx, isActive));
   });
 
-  // Setup drag-and-drop on the track list (only if not active)
-  if (!isActive) setupDragDrop(trackList, pl);
+  // No drag-drop on card — drag-drop is in the music modal
 
   // Actions row: badge (50%) + play/stop btn (50%), above footer
   const actionsRow = document.createElement('div');
@@ -555,8 +554,6 @@ function buildTrackRow(track, pl, idx, isActive) {
   row.className = 'track-row';
   row.dataset.idx = idx;
 
-  if (!isActive) row.setAttribute('draggable', 'true');
-
   const isCurrentTrack = isActive && state.currentTrackUri && track.spotifyUri === state.currentTrackUri;
   if (isCurrentTrack) row.classList.add('now-playing');
 
@@ -564,11 +561,9 @@ function buildTrackRow(track, pl, idx, isActive) {
     ? `<img class="track-art" src="${track.albumArt}" alt="" loading="lazy" />`
     : `<div class="track-art-ph"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>`;
 
-  const dragHandle = isActive ? '' : '<span class="drag-handle" title="Kéo để sắp xếp">⠿</span>';
   const eqBars = isCurrentTrack ? TRACK_EQ_HTML : '';
 
   row.innerHTML = `
-    ${dragHandle}
     ${artHtml}
     <div class="track-info">
       <div class="track-name">${escHtml(track.name)}</div>
@@ -776,10 +771,13 @@ function renderModalTracks(pl) {
   tracks.forEach((track, idx) => {
     const row = document.createElement('div');
     row.className = 'modal-track-row';
+    row.setAttribute('draggable', 'true');
+    row.dataset.idx = idx;
     const artHtml = track.albumArt
       ? `<img class="modal-track-art" src="${track.albumArt}" alt="" />`
       : `<div class="modal-track-art-ph"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>`;
     row.innerHTML = `
+      <span class="modal-drag-handle" title="Kéo để sắp xếp">⠿</span>
       <span class="modal-track-num">${idx + 1}</span>
       ${artHtml}
       <div class="modal-track-info">
@@ -793,6 +791,53 @@ function renderModalTracks(pl) {
       </button>`;
     row.querySelector('.remove-modal-track').addEventListener('click', () => handleModalRemoveTrack(idx));
     list.appendChild(row);
+  });
+
+  // Setup drag-drop on modal list
+  setupModalDragDrop(list, pl);
+}
+
+function setupModalDragDrop(list, pl) {
+  let dragSrcIdx = null;
+
+  list.addEventListener('dragstart', e => {
+    const row = e.target.closest('.modal-track-row');
+    if (!row) return;
+    dragSrcIdx = parseInt(row.dataset.idx);
+    row.classList.add('modal-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  list.addEventListener('dragend', e => {
+    const row = e.target.closest('.modal-track-row');
+    if (row) row.classList.remove('modal-dragging');
+    list.querySelectorAll('.modal-drag-over').forEach(r => r.classList.remove('modal-drag-over'));
+    dragSrcIdx = null;
+  });
+
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const row = e.target.closest('.modal-track-row');
+    if (!row) return;
+    list.querySelectorAll('.modal-drag-over').forEach(r => r.classList.remove('modal-drag-over'));
+    if (parseInt(row.dataset.idx) !== dragSrcIdx) row.classList.add('modal-drag-over');
+  });
+
+  list.addEventListener('drop', e => {
+    e.preventDefault();
+    const row = e.target.closest('.modal-track-row');
+    if (!row || dragSrcIdx === null) return;
+    const dropIdx = parseInt(row.dataset.idx);
+    if (dropIdx === dragSrcIdx) return;
+
+    const tracks = [...(pl.tracks || [])];
+    const [removed] = tracks.splice(dragSrcIdx, 1);
+    tracks.splice(dropIdx, 0, removed);
+    pl.tracks = tracks;
+    savePlaylist(pl);
+    renderModalTracks(pl);
+    rerenderCard(pl);
   });
 }
 
