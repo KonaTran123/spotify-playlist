@@ -905,18 +905,6 @@ async function bootstrap() {
     position: 'auto',
   });
 
-  // Initialize Choices.js on slot select (create bar)
-  const inpSlotEl = document.getElementById('inp-slot');
-  new Choices(inpSlotEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
-
-  // Initialize Choices.js on filter slot select
-  const filterSlotEl = document.getElementById('filter-slot-select');
-  const choicesSlot = new Choices(filterSlotEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
-
-  // Initialize Choices.js on view select
-  const viewSelectEl = document.getElementById('view-select');
-  new Choices(viewSelectEl, { searchEnabled: false, itemSelectText: '', allowHTML: false });
-
   if (api) {
     const cfg = await api.getConfig();
     state.playlists = cfg.playlists || [];

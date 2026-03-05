@@ -191,8 +191,12 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 /* Create bar */
 .create-bar{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex-shrink:0;flex-wrap:wrap}
 .create-bar span{font-size:13px;font-weight:600;color:var(--txt2);white-space:nowrap}
-.create-bar input,.create-bar select{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;color:var(--txt);font-size:13px;outline:none;color-scheme:dark}
-.create-bar input:focus,.create-bar select:focus{border-color:var(--green)}
+.create-bar input,.create-bar .sel-wrap select{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;color:var(--txt);font-size:13px;outline:none;color-scheme:dark}
+.create-bar input:focus,.create-bar .sel-wrap select:focus{border-color:var(--green)}
+.create-bar .sel-wrap select{padding-right:28px}
+.create-bar .sel-wrap::after{border-top-color:var(--txt2)}
+/* Flatpickr input in create-bar */
+#inp-date{cursor:pointer;caret-color:transparent}
 
 /* Filter card */
 .filter-card{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex:1;min-width:0;flex-wrap:wrap;overflow:visible}
@@ -202,7 +206,6 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .filter-btn:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
 .filter-btn.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
 .filter-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px;flex-shrink:0}
-.view-toggle-card{flex:none;min-width:0}
 
 /* ── Day view ── */
 #playlists-grid.day-view{display:flex;flex-direction:column;gap:0;padding:0}
@@ -210,11 +213,9 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .day-view-date-header .dvdh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
 .day-view-date-header .dvdh-today{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700}
 .day-view-slot-body{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 20px 20px}
-.filter-slot-select{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;outline:none;appearance:none;-webkit-appearance:none}
-.filter-slot-select:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
-.filter-slot-select option{background:var(--surf);color:var(--txt)}
-.filter-slot-select.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
+.view-toggle-card{flex:none;min-width:0}
 .filter-custom-wrap{position:relative;display:inline-flex}
+.filter-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px;flex-shrink:0}
 .filter-custom-btn{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .filter-custom-btn:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
 .filter-custom-btn.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
@@ -399,23 +400,19 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .flatpickr-prev-month:hover,.flatpickr-next-month:hover{color:var(--txt)!important;fill:var(--txt)!important}
 .numInputWrapper:hover,.flatpickr-current-month .numInput:hover{background:rgba(255,255,255,0.05)!important}
 .flatpickr-current-month select{color:var(--txt)!important;background:transparent!important}
-/* ── Choices.js overrides ── */
-.choices{margin:0!important;font-family:inherit!important;position:relative!important}
-.choices__inner{background:rgba(255,255,255,0.05)!important;border:1px solid transparent!important;border-radius:999px!important;padding:5px 32px 5px 14px!important;min-height:unset!important;font-size:12px!important;font-weight:600!important;color:var(--txt2)!important;transition:all .15s!important;display:flex!important;align-items:center!important;min-width:80px;cursor:pointer}
-.choices__inner:hover,.choices.is-open .choices__inner{background:rgba(255,255,255,0.08)!important;border-color:rgba(255,255,255,0.12)!important;color:var(--txt)!important}
-.choices[data-type*="select-one"] .choices__inner::after,.choices__list--dropdown .choices__item--selectable::after{display:none!important}
-.choices[data-type*="select-one"]::after{content:'';border:4px solid transparent!important;border-top-color:var(--txt2)!important;position:absolute!important;right:12px!important;top:50%!important;transform:translateY(-25%)!important;pointer-events:none!important;transition:transform .15s!important}
-.choices.is-open[data-type*="select-one"]::after{border-top-color:var(--txt)!important;transform:translateY(-75%) rotate(180deg)!important}
-.choices__list--dropdown,.choices__list[aria-expanded]{background:var(--surf)!important;border:1px solid var(--bdr)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,0.5)!important;overflow:hidden!important;z-index:9999!important;top:calc(100% + 4px)!important;min-width:100%!important}
-.choices__list--dropdown .choices__item{font-size:13px!important;color:var(--txt2)!important;padding:9px 14px!important;transition:all .1s!important}
-.choices__list--dropdown .choices__item:hover,.choices__list--dropdown .choices__item.is-highlighted{background:rgba(255,255,255,0.06)!important;color:var(--txt)!important}
-.choices__list--dropdown .choices__item.is-selected{color:var(--green)!important;font-weight:700!important}
-.choices__list--single{padding:0!important;display:flex!important;align-items:center!important}
-.choices__list--single .choices__item{color:var(--txt2)!important;font-size:12px!important;font-weight:600!important;white-space:nowrap}
-.choices.is-open .choices__list--single .choices__item,.choices__inner:focus-within .choices__list--single .choices__item{color:var(--txt)!important}
+/* ── Custom Select wrapper ── */
+.sel-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0}
+.sel-wrap select{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 30px 5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;outline:none;font-family:inherit}
+.sel-wrap select:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
+.sel-wrap select:focus{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.18)}
+.sel-wrap select option{background:#1a1a1a;color:#fff}
+.sel-wrap::after{content:'';pointer-events:none;position:absolute;right:11px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--txt2)}
+.sel-wrap select:hover~*,.sel-wrap:hover::after{border-top-color:var(--txt)}
+html.theme-light .sel-wrap select option{background:#fff;color:#111}
+html.theme-light .sel-wrap select{color:#555}
+html.theme-light .sel-wrap::after{border-top-color:#888}
 </style>
 <link rel="stylesheet" href="/lib/flatpickr.min.css" />
-<link rel="stylesheet" href="/lib/choices.min.css" />
 <body>
 
 <!-- Header -->
@@ -595,10 +592,12 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
     <div class="create-bar">
       <span>Tạo playlist</span>
       <input type="date" id="inp-date" />
-      <select id="inp-slot">
-        <option value="09:30">9h30</option>
-        <option value="13:00">13h00</option>
-      </select>
+      <div class="sel-wrap">
+        <select id="inp-slot">
+          <option value="09:30">9h30</option>
+          <option value="13:00">13h00</option>
+        </select>
+      </div>
       <button class="btn btn-green btn-xs" id="create-btn">+ Tạo</button>
     </div>
     <!-- Filter card -->
@@ -618,11 +617,13 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
           <input type="date" class="filter-custom-inp" id="filter-date-inp" style="display:none" />
         </div>
         <div class="filter-sep"></div>
-        <select class="filter-slot-select" id="filter-slot-select">
-          <option value="">⏰ Tất cả giờ</option>
-          <option value="09:30">🌅 9h30</option>
-          <option value="13:00">☀️ 13h00</option>
-        </select>
+        <div class="sel-wrap">
+          <select id="filter-slot-select">
+            <option value="">⏰ Tất cả giờ</option>
+            <option value="09:30">🌅 9h30</option>
+            <option value="13:00">☀️ 13h00</option>
+          </select>
+        </div>
       </div>
       <span class="filter-result-count" id="filter-count"></span>
     </div>
@@ -632,10 +633,12 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h4V5H3v4zm0 5h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zM8 9h4V5H8v4zm5-4v4h4V5h-4zm5 9h-4v4h4v-4zM8 19h4v-4H8v4zm-5 0h4v-4H3v4z"/></svg>
         View
       </span>
-      <select class="filter-slot-select" id="view-select">
-        <option value="grid">☰ Mặc định</option>
-        <option value="day">📅 Theo ngày</option>
-      </select>
+      <div class="sel-wrap">
+        <select id="view-select">
+          <option value="grid">☰ Mặc định</option>
+          <option value="day">📅 Theo ngày</option>
+        </select>
+      </div>
     </div>
   </div>
   <div id="playlists-grid"></div>
@@ -736,6 +739,5 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 
 <script src="/lib/flatpickr.min.js"></script>
 <script src="/lib/flatpickr-vn.js"></script>
-<script src="/lib/choices.min.js"></script>
 <script src="./renderer.js"></script>
 </body>
