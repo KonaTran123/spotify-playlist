@@ -195,8 +195,6 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .create-bar input:focus,.create-bar .sel-wrap select:focus{border-color:var(--green)}
 .create-bar .sel-wrap select{padding-right:28px}
 .create-bar .sel-wrap::after{border-top-color:var(--txt2)}
-/* Flatpickr input in create-bar */
-#inp-date{cursor:pointer;caret-color:transparent}
 
 /* Filter card */
 .filter-card{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex:1;min-width:0;flex-wrap:wrap;overflow:visible}
@@ -390,16 +388,6 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .guide-step-text{flex:1}
 .guide-step-title{font-size:13px;font-weight:600;margin-bottom:3px}
 .guide-step-desc{font-size:12px;color:var(--txt2);line-height:1.6}
-/* ── Flatpickr overrides (dark theme) ── */
-.flatpickr-calendar{background:var(--surf)!important;border:1px solid var(--bdr)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,0.5)!important;font-family:inherit!important}
-.flatpickr-months .flatpickr-month,.flatpickr-weekdays,.flatpickr-day{color:var(--txt)!important}
-.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--green)!important;border-color:var(--green)!important;color:#000!important;font-weight:700}
-.flatpickr-day:hover{background:rgba(255,255,255,0.08)!important}
-.flatpickr-day.today{border-color:var(--green)!important}
-.flatpickr-prev-month,.flatpickr-next-month{color:var(--txt2)!important;fill:var(--txt2)!important}
-.flatpickr-prev-month:hover,.flatpickr-next-month:hover{color:var(--txt)!important;fill:var(--txt)!important}
-.numInputWrapper:hover,.flatpickr-current-month .numInput:hover{background:rgba(255,255,255,0.05)!important}
-.flatpickr-current-month select{color:var(--txt)!important;background:transparent!important}
 /* ── Custom Select wrapper ── */
 .sel-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0}
 .sel-wrap select{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 30px 5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;outline:none;font-family:inherit}
@@ -412,7 +400,7 @@ html.theme-light .sel-wrap select option{background:#fff;color:#111}
 html.theme-light .sel-wrap select{color:#555}
 html.theme-light .sel-wrap::after{border-top-color:#888}
 </style>
-<link rel="stylesheet" href="/lib/flatpickr.min.css" />
+
 <body>
 
 <!-- Header -->
@@ -737,7 +725,5 @@ html.theme-light .sel-wrap::after{border-top-color:#888}
   </div>
 </div>
 
-<script src="/lib/flatpickr.min.js"></script>
-<script src="/lib/flatpickr-vn.js"></script>
 <script src="./renderer.js"></script>
 </body>

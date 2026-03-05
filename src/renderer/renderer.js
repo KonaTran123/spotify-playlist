@@ -894,16 +894,7 @@ async function saveCredentials() {
 
 // ── Bootstrap ──
 async function bootstrap() {
-  // Initialize Flatpickr on create-bar date input
-  const inpDateEl = document.getElementById('inp-date');
-  flatpickr(inpDateEl, {
-    dateFormat: 'Y-m-d',
-    defaultDate: todayISO(),
-    locale: typeof flatpickr.l10ns.vn !== 'undefined' ? 'vn' : 'default',
-    disableMobile: true,
-    appendTo: document.body,
-    position: 'auto',
-  });
+  document.getElementById('inp-date').value = todayISO();
 
   if (api) {
     const cfg = await api.getConfig();
@@ -1146,26 +1137,21 @@ async function bootstrap() {
     renderAll();
   });
 
-  // Custom date button: opens Flatpickr calendar
+  // Custom date button: click opens native date picker
   const customBtn = document.getElementById('filter-custom-btn');
   const dateInpEl = document.getElementById('filter-date-inp');
   if (customBtn && dateInpEl) {
-    const fpFilter = flatpickr(dateInpEl, {
-      dateFormat: 'Y-m-d',
-      defaultDate: todayISO(),
-      locale: typeof flatpickr.l10ns.vn !== 'undefined' ? 'vn' : 'default',
-      disableMobile: true,
-      appendTo: document.body,
-      onChange: function(_dates, dateStr) {
-        if (dateStr) {
-          setFilter('custom', dateStr);
-          const label = document.getElementById('filter-custom-label');
-          if (label) label.textContent = dateStr;
-          customBtn.classList.add('active');
-        }
-      },
+    dateInpEl.style.display = 'none';
+    dateInpEl.value = todayISO();
+    customBtn.addEventListener('click', () => { try { dateInpEl.showPicker(); } catch(e) {} });
+    dateInpEl.addEventListener('change', () => {
+      if (dateInpEl.value) {
+        setFilter('custom', dateInpEl.value);
+        const label = document.getElementById('filter-custom-label');
+        if (label) label.textContent = formatDateVNShort(dateInpEl.value);
+        customBtn.classList.add('active');
+      }
     });
-    customBtn.addEventListener('click', () => fpFilter.open());
   }
 
   // ── Theme toggle ──
