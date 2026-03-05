@@ -8,6 +8,19 @@ const cfg = require('./config');
 const spotify = require('./spotify');
 const spotifyAuth = require('./spotify-auth');
 
+// ── Single instance lock ──────────────────────────────
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWin) {
+      if (mainWin.isMinimized()) mainWin.restore();
+      mainWin.focus();
+    }
+  });
+}
+
 process.on('uncaughtException', (err) => {
   if (err.code === 'EIO' || (err.message && err.message.includes('EIO'))) return;
   console.error('Uncaught:', err);
