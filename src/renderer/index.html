@@ -184,10 +184,10 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 @keyframes eq{from{height:3px}to{height:14px}}
 
 /* Body */
-.body{flex:1;display:flex;flex-direction:column;padding:14px 20px;gap:12px;overflow:visible}
+.body{flex:1;display:flex;flex-direction:column;padding:14px 20px;gap:12px;overflow:hidden}
 
 /* Top bar (create + filter side by side) */
-.top-bar{display:flex;gap:12px;flex-shrink:0;flex-wrap:wrap;overflow:visible;position:relative;z-index:100}
+.top-bar{display:flex;align-items:flex-start;gap:12px;flex-shrink:0;flex-wrap:wrap;overflow:visible;position:relative;z-index:100}
 
 /* Create bar */
 .create-bar{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;flex-shrink:0;flex-wrap:wrap}
@@ -218,11 +218,11 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .filter-custom-btn{background:rgba(255,255,255,0.05);border:1px solid transparent;border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all 150ms;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .filter-custom-btn:hover{background:rgba(255,255,255,0.08);color:var(--txt);border-color:rgba(255,255,255,0.12)}
 .filter-custom-btn.active{background:rgba(29,185,84,0.15);border-color:rgba(29,185,84,0.45);color:var(--green)}
-.filter-custom-inp{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;border:none;font-size:0;color-scheme:dark;z-index:1}
+.filter-custom-inp{position:absolute;top:100%;left:0;opacity:0;pointer-events:none;width:100%;height:1px;border:none;font-size:0;color-scheme:dark;z-index:9999}
 .filter-result-count{margin-left:auto;font-size:11px;color:#555;white-space:nowrap;font-variant-numeric:tabular-nums}
 
 /* Grid */
-#playlists-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;overflow-y:auto;flex:1;padding-right:2px;scrollbar-width:thin;scrollbar-color:#333 transparent;align-content:start}
+#playlists-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;overflow-y:auto;flex:1;min-height:0;padding-right:2px;scrollbar-width:thin;scrollbar-color:#333 transparent;align-content:start}
 #playlists-grid::-webkit-scrollbar{width:5px}
 #playlists-grid::-webkit-scrollbar-thumb{background:#333;border-radius:99px}
 
@@ -308,14 +308,14 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .modal-subtitle{font-size:11px;color:var(--txt2);margin-top:2px}
 .modal-close{background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt2);font-size:14px;transition:all 150ms}
 .modal-close:hover{background:rgba(248,113,113,0.15);color:var(--danger)}
-.modal-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#333 transparent}
+.modal-body{flex:1;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#333 transparent}
 .modal-body::-webkit-scrollbar{width:4px}
 .modal-body::-webkit-scrollbar-thumb{background:#333;border-radius:99px}
 .modal-section{padding:12px 14px}
 .modal-section-hd{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 .modal-count-chip{background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.3);color:var(--green);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700}
 .modal-count-chip.full{background:rgba(29,185,84,0.2)}
-.modal-track-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;transition:background 110ms;cursor:default}
+.modal-track-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;transition:background 110ms;cursor:default;will-change:transform}
 .modal-track-row:hover{background:rgba(255,255,255,0.05)}
 .modal-track-row.modal-dragging{opacity:0.4;background:rgba(29,185,84,0.08);border:1px dashed rgba(29,185,84,0.4)}
 .modal-track-row.modal-drag-over{background:rgba(29,185,84,0.1);box-shadow:inset 0 2px 0 var(--green)}
@@ -399,9 +399,11 @@ input[type=range].pb-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12p
 .sel-wrap select option{background:#1a1a1a;color:#fff}
 .sel-wrap::after{content:'';pointer-events:none;position:absolute;right:11px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--txt2)}
 .sel-wrap select:hover~*,.sel-wrap:hover::after{border-top-color:var(--txt)}
+#filter-slot-select,#view-select{background:rgba(255,255,255,0.1);border:1px solid var(--bdr);color:var(--txt2)}
 html.theme-light .sel-wrap select option{background:#fff;color:#111}
 html.theme-light .sel-wrap select{color:#555}
 html.theme-light .sel-wrap::after{border-top-color:#888}
+html.theme-light #filter-slot-select,html.theme-light #view-select{background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.15)}
 </style>
 
 <body>
@@ -462,14 +464,6 @@ html.theme-light .sel-wrap::after{border-top-color:#888}
     </div>
     <div class="dlg-body">
       <div class="settings-list">
-        <div class="settings-item">
-          <label>Spotify Client ID</label>
-          <input type="text" id="inp-client-id" placeholder="Nhập Client ID" autocomplete="off" />
-        </div>
-        <div class="settings-item">
-          <label>Spotify Client Secret</label>
-          <input type="password" id="inp-client-secret" placeholder="Nhập Client Secret" />
-        </div>
         <div class="settings-item-row">
           <div class="settings-item" style="max-width:160px">
             <label>Giới hạn bài / card</label>
@@ -540,7 +534,7 @@ html.theme-light .sel-wrap::after{border-top-color:#888}
           <div class="guide-step-num">1</div>
           <div class="guide-step-text">
             <div class="guide-step-title">Cấu hình Spotify API</div>
-            <div class="guide-step-desc">Vào <strong>Cài đặt</strong>, nhập <em>Client ID</em> và <em>Client Secret</em> từ Spotify Developer Dashboard. Redirect URI: <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">http://127.0.0.1:8888/callback</code></div>
+            <div class="guide-step-desc">Tạo app tại <strong>Spotify Developer Dashboard</strong> rồi điền <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">SPOTIFY_CLIENT_ID</code> và <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">SPOTIFY_CLIENT_SECRET</code> vào file <strong>.env</strong>. Redirect URI cần đặt là <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">http://127.0.0.1:8888/callback</code></div>
           </div>
         </div>
         <div class="guide-step">
@@ -605,7 +599,7 @@ html.theme-light .sel-wrap::after{border-top-color:#888}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
             <span id="filter-custom-label">Chọn ngày</span>
           </button>
-          <input type="date" class="filter-custom-inp" id="filter-date-inp" style="display:none" />
+          <input type="date" class="filter-custom-inp" id="filter-date-inp" />
         </div>
         <div class="filter-sep"></div>
         <div class="sel-wrap">

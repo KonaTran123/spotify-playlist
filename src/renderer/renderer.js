@@ -797,7 +797,7 @@ function renderModalTracks(pl) {
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
       </button>`;
-    row.querySelector('.remove-modal-track').addEventListener('click', () => handleModalRemoveTrack(idx));
+    row.querySelector('.remove-modal-track').addEventListener('click', e => { handleModalRemoveTrack(parseInt(e.currentTarget.closest('.modal-track-row').dataset.idx)); });
     list.appendChild(row);
   });
 
@@ -807,6 +807,8 @@ function renderModalTracks(pl) {
 
 function setupModalDragDrop(list, pl) {
   let dragSrcIdx = null;
+  let dragOverIdx = null;
+  let rafId = null;
 
   list.addEventListener('dragstart', e => {
     const row = e.target.closest('.modal-track-row');
@@ -817,10 +819,11 @@ function setupModalDragDrop(list, pl) {
   });
 
   list.addEventListener('dragend', e => {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     const row = e.target.closest('.modal-track-row');
     if (row) row.classList.remove('modal-dragging');
     list.querySelectorAll('.modal-drag-over').forEach(r => r.classList.remove('modal-drag-over'));
-    dragSrcIdx = null;
+    dragSrcIdx = null; dragOverIdx = null;
   });
 
   list.addEventListener('dragover', e => {
@@ -828,24 +831,45 @@ function setupModalDragDrop(list, pl) {
     e.dataTransfer.dropEffect = 'move';
     const row = e.target.closest('.modal-track-row');
     if (!row) return;
-    list.querySelectorAll('.modal-drag-over').forEach(r => r.classList.remove('modal-drag-over'));
-    if (parseInt(row.dataset.idx) !== dragSrcIdx) row.classList.add('modal-drag-over');
+    const idx = parseInt(row.dataset.idx);
+    if (idx === dragOverIdx) return;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      list.querySelectorAll('.modal-drag-over').forEach(r => r.classList.remove('modal-drag-over'));
+      if (idx !== dragSrcIdx) row.classList.add('modal-drag-over');
+      dragOverIdx = idx;
+      rafId = null;
+    });
   });
 
   list.addEventListener('drop', e => {
     e.preventDefault();
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     const row = e.target.closest('.modal-track-row');
     if (!row || dragSrcIdx === null) return;
     const dropIdx = parseInt(row.dataset.idx);
     if (dropIdx === dragSrcIdx) return;
+    const src = dragSrcIdx, dst = dropIdx;
+    dragSrcIdx = null; dragOverIdx = null;
 
     const tracks = [...(pl.tracks || [])];
-    const [removed] = tracks.splice(dragSrcIdx, 1);
-    tracks.splice(dropIdx, 0, removed);
+    const [removed] = tracks.splice(src, 1);
+    tracks.splice(dst, 0, removed);
     pl.tracks = tracks;
     savePlaylist(pl);
-    renderModalTracks(pl);
-    rerenderCard(pl);
+
+    const allRows = [...list.querySelectorAll('.modal-track-row')];
+    const srcEl = allRows[src];
+    const destEl = allRows[dst];
+    if (src < dst) { list.insertBefore(srcEl, destEl.nextSibling); }
+    else           { list.insertBefore(srcEl, destEl); }
+    [...list.querySelectorAll('.modal-track-row')].forEach((r, i) => {
+      r.dataset.idx = i;
+      const n = r.querySelector('.modal-track-num');
+      if (n) n.textContent = i + 1;
+    });
+
+    requestAnimationFrame(() => rerenderCard(pl));
   });
 }
 
@@ -936,11 +960,9 @@ async function doModalSearch() {
 
 // ── Credentials & Settings ──
 async function saveCredentials() {
-  const clientId = document.getElementById('inp-client-id').value.trim();
-  const clientSecret = document.getElementById('inp-client-secret').value.trim();
   const maxTracks = parseInt(document.getElementById('inp-max-tracks').value) || 5;
   state.maxTracks = Math.max(1, Math.min(10, maxTracks));
-  if (api) await api.setCredentials({ clientId, clientSecret, maxTracks: state.maxTracks });
+  if (api) await api.setCredentials({ maxTracks: state.maxTracks });
   renderAll(); // re-render cards with updated count
   document.getElementById('settings-dialog').classList.add('hidden');
 }
@@ -954,7 +976,6 @@ async function bootstrap() {
     state.playlists = cfg.playlists || [];
     state.loggedIn = cfg.loggedIn || false;
     state.maxTracks = cfg.maxTracks || 5;
-    if (cfg.clientId) document.getElementById('inp-client-id').value = cfg.clientId;
     document.getElementById('inp-max-tracks').value = state.maxTracks;
 
     updateLoginUI(state.loggedIn, cfg.profile);
@@ -1194,9 +1215,8 @@ async function bootstrap() {
   const customBtn = document.getElementById('filter-custom-btn');
   const dateInpEl = document.getElementById('filter-date-inp');
   if (customBtn && dateInpEl) {
-    dateInpEl.style.display = 'none';
     dateInpEl.value = todayISO();
-    customBtn.addEventListener('click', () => { try { dateInpEl.showPicker(); } catch(e) {} });
+    customBtn.addEventListener('click', () => { try { dateInpEl.showPicker(); } catch(e) { dateInpEl.click(); } });
     dateInpEl.addEventListener('change', () => {
       if (dateInpEl.value) {
         setFilter('custom', dateInpEl.value);
