@@ -32,7 +32,8 @@ const stream = {
   playing:     false,
   rafId:       null,
   rafBaseTs:   0,
-  rafBasePos:  0
+  rafBasePos:  0,
+  mode:        null   // 'sdk' | 'connect'
 };
 
 window.onSpotifyWebPlaybackSDKReady = () => {
@@ -170,6 +171,7 @@ async function pollPlayerState() {
   const res = await api.playerState().catch(() => ({}));
   const ps = res && res.state;
   if (!ps || !ps.item) {
+    if (stream.open && stream.mode === 'connect') return; // don't hide bar while modal open
     updatePlayerBarIdle();
     return;
   }
@@ -177,6 +179,15 @@ async function pollPlayerState() {
   const isPlaying = ps.is_playing;
   const progress = ps.progress_ms || 0;
   const duration = item.duration_ms || 0;
+
+  // Update stream modal in connect mode
+  if (stream.open && stream.mode === 'connect') {
+    updateStreamFromPoll({ name: item.name,
+      artist: (item.artists || []).map(a => a.name).join(', '),
+      albumArt: ((item.album || {}).images || [])[0]?.url || null,
+      uri: item.uri, isPlaying, progress, duration });
+    return;
+  }
 
   updatePlayerBarTrack({
     name: item.name,
@@ -768,36 +779,60 @@ async function openStreamModal(id) {
   stream.posMs       = 0;
   stream.durMs       = 0;
   stream.playing     = false;
+  stream.mode        = null;
 
-  // Show modal immediately, hide bottom bar
+  // Show modal & hide bottom bar
   document.getElementById('stream-modal').classList.remove('hidden');
   const bar = document.getElementById('player-bar');
   if (bar) bar.classList.add('hidden');
-  stopPolling();
 
-  // Render tracklist
+  // Render tracklist (will show pending state)
   renderStreamTracklist();
-  // Show loading state while SDK device registers
   showStreamLoading();
 
-  // Wait for SDK device (up to 6s), then play
+  const uris = stream.tracks.map(t => t.spotifyUri);
+
+  // Wait up to 3s for SDK device, then fall back to Connect API
   let waited = 0;
-  while (!sdkDeviceId && waited < 6000) {
-    await new Promise(r => setTimeout(r, 250));
-    waited += 250;
+  while (!sdkDeviceId && waited < 3000) {
+    await new Promise(r => setTimeout(r, 200));
+    waited += 200;
   }
   if (!stream.open) return; // user closed while waiting
 
-  if (!sdkDeviceId) {
-    showStreamError('Không khởi động được trình phát.<br>Tài khoản Spotify Premium là bắt buộc để phát nhạc trong ứng dụng.');
-    return;
+  if (sdkDeviceId) {
+    // ── SDK mode: play in-app ──
+    stream.mode = 'sdk';
+    const res = await api.playUris(uris, sdkDeviceId);
+    if (res && res.error && stream.open) {
+      // SDK play failed → try Connect fallback
+      await startConnectFallback(id, uris, pl);
+    }
+  } else {
+    // ── Connect API fallback ──
+    await startConnectFallback(id, uris, pl);
   }
+}
 
-  const uris = stream.tracks.map(t => t.spotifyUri);
-  const res  = await api.playUris(uris, sdkDeviceId);
-  if (res && res.error) {
+async function startConnectFallback(id, uris, pl) {
+  if (!stream.open) return;
+  stream.mode = 'connect';
+  startPolling(); // use existing polling (3s interval)
+
+  let res = await api.playPlaylist(id);
+  if (res && res.error === 'no_device') {
+    await api.openSpotify();
+    await new Promise(r => setTimeout(r, 4000));
     if (!stream.open) return;
-    showStreamError('Lỗi phát nhạc: ' + escHtml(res.error));
+    res = await api.playPlaylist(id);
+  }
+  if (res && res.error && stream.open) {
+    showStreamError('Lỗi phát nhạc: ' + escHtml(res.error) +
+      '<br><small>Vui lòng mở app Spotify và phát bất kỳ bài hát nào rồi thử lại.</small>');
+  } else if (res && res.ok) {
+    // Mark card active so badges update
+    state.activePlaylistId = id;
+    renderStreamTracklist();
   }
 }
 
@@ -806,8 +841,12 @@ function closeStreamModal() {
   stream.open = false;
   if (stream.rafId) { cancelAnimationFrame(stream.rafId); stream.rafId = null; }
 
-  // Pause SDK
-  if (sdkPlayer) sdkPlayer.pause().catch(() => {});
+  // Stop playback
+  if (stream.mode === 'sdk' && sdkPlayer) sdkPlayer.pause().catch(() => {});
+  if (stream.mode === 'connect') {
+    api.playbackControl('pause').catch(() => {});
+    stopPolling();
+  }
 
   // Mark card as played
   if (stream.playlistId) {
@@ -828,6 +867,7 @@ function closeStreamModal() {
   stream.tracks     = [];
   stream.currentUri = null;
   stream.playedUris = new Set();
+  stream.mode       = null;
   updateNowPlayingIndicators();
 }
 
@@ -981,14 +1021,68 @@ function renderStreamTracklist() {
   // Click to jump to track
   container.querySelectorAll('.stream-track-item').forEach(item => {
     item.addEventListener('click', async () => {
-      if (!sdkDeviceId) return;
       const fromIdx = parseInt(item.dataset.idx);
       const uris    = stream.tracks.slice(fromIdx).map(t => t.spotifyUri);
       // Mark all before this track as played
       stream.tracks.slice(0, fromIdx).forEach(t => stream.playedUris.add(t.spotifyUri));
-      await api.playUris(uris, sdkDeviceId);
+      if (stream.mode === 'sdk' && sdkDeviceId) {
+        await api.playUris(uris, sdkDeviceId);
+      } else {
+        // Connect mode: play from this index using playPlaylist is tricky;
+        // use playUris with no specific device (auto-pick)
+        await api.playUris(uris, null);
+      }
     });
   });
+}
+
+// Update stream modal from polling (Connect mode)
+function updateStreamFromPoll({ name, artist, albumArt, uri, isPlaying, progress, duration }) {
+  if (!stream.open) return;
+
+  // Track change
+  if (uri !== stream.currentUri) {
+    if (stream.currentUri) stream.playedUris.add(stream.currentUri);
+    stream.currentUri  = uri;
+    renderStreamTracklist();
+    // Update album art, name, artist
+    const nameEl   = document.getElementById('stream-track-name');
+    const artistEl = document.getElementById('stream-track-artist');
+    const totEl    = document.getElementById('stream-tot');
+    const bgEl     = document.getElementById('stream-bg-art');
+    const artWrap  = document.getElementById('stream-art-wrap');
+    if (nameEl)   nameEl.textContent   = name || '—';
+    if (artistEl) artistEl.textContent = artist || '';
+    if (totEl)    totEl.textContent    = fmtTime(duration);
+    if (bgEl && albumArt) bgEl.style.backgroundImage = `url(${albumArt})`;
+    if (artWrap) {
+      artWrap.innerHTML = albumArt
+        ? `<img class="stream-art${isPlaying ? ' spinning' : ''}" src="${albumArt}" alt="" />`
+        : `<div class="stream-art-ph"><svg width="72" height="72" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg></div>`;
+      artWrap.classList.toggle('playing', isPlaying);
+    }
+  }
+
+  // Update progress via RAF base values
+  stream.posMs      = progress;
+  stream.durMs      = duration;
+  stream.playing    = isPlaying;
+  stream.rafBasePos = progress;
+  stream.rafBaseTs  = Date.now();
+
+  updateStreamPlayPause(isPlaying);
+
+  // Prev/next buttons in connect mode — always enabled
+  document.getElementById('stream-prev')?.removeAttribute('disabled');
+  document.getElementById('stream-next')?.removeAttribute('disabled');
+
+  // Check if all tracks done (uri not in our playlist = moved on / finished)
+  const allUris   = new Set(stream.tracks.map(t => t.spotifyUri));
+  const notInList = !allUris.has(uri);
+  if (notInList && stream.playedUris.size > 0) {
+    // Playback moved outside playlist → close modal
+    setTimeout(() => { if (stream.open) closeStreamModal(); }, 800);
+  }
 }
 
 // ── Music Modal ──
@@ -1455,21 +1549,29 @@ async function bootstrap() {
 
   // ── Stream modal event listeners ──
   document.getElementById('stream-close-btn')?.addEventListener('click', () => closeStreamModal());
-  document.getElementById('stream-playpause')?.addEventListener('click', () => {
-    if (sdkPlayer) sdkPlayer.togglePlay().catch(() => {});
+  document.getElementById('stream-playpause')?.addEventListener('click', async () => {
+    if (stream.mode === 'sdk' && sdkPlayer) {
+      sdkPlayer.togglePlay().catch(() => {});
+    } else if (stream.mode === 'connect') {
+      const action = stream.playing ? 'pause' : 'resume';
+      await api.playbackControl(action);
+    }
   });
-  document.getElementById('stream-prev')?.addEventListener('click', () => {
-    if (sdkPlayer) sdkPlayer.previousTrack().catch(() => {});
+  document.getElementById('stream-prev')?.addEventListener('click', async () => {
+    if (stream.mode === 'sdk' && sdkPlayer) sdkPlayer.previousTrack().catch(() => {});
+    else if (stream.mode === 'connect') api.playbackControl('prev');
   });
-  document.getElementById('stream-next')?.addEventListener('click', () => {
-    if (sdkPlayer) sdkPlayer.nextTrack().catch(() => {});
+  document.getElementById('stream-next')?.addEventListener('click', async () => {
+    if (stream.mode === 'sdk' && sdkPlayer) sdkPlayer.nextTrack().catch(() => {});
+    else if (stream.mode === 'connect') api.playbackControl('next');
   });
   document.getElementById('stream-prog-bar')?.addEventListener('click', (e) => {
-    if (!sdkPlayer || !stream.durMs) return;
+    if (!stream.durMs) return;
     const rect  = e.currentTarget.getBoundingClientRect();
     const pct   = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
     const posMs = Math.round(pct * stream.durMs);
-    sdkPlayer.seek(posMs).catch(() => {});
+    if (stream.mode === 'sdk' && sdkPlayer) sdkPlayer.seek(posMs).catch(() => {});
+    else if (stream.mode === 'connect') api.playbackControl('seek', posMs);
     stream.posMs = posMs; stream.rafBasePos = posMs; stream.rafBaseTs = Date.now();
   });
   // Close on overlay click (outside stream-box)
