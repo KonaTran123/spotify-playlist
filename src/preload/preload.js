@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('spotifyApp', {
   playbackControl:  (act, data) => ipcRenderer.invoke('spotify:playback-control', act, data),
   openSpotify:      ()          => ipcRenderer.invoke('spotify:open-app'),
   openUrl:          (url)       => ipcRenderer.invoke('spotify:open-url', url),
+  getToken:         ()          => ipcRenderer.invoke('spotify:get-token'),
+  playUris:         (uris, did) => ipcRenderer.invoke('spotify:play-uris', { uris, deviceId: did }),
   onUpdate: (fn) => {
     if (typeof fn !== 'function') return;
     ipcRenderer.on('playlists:updated', (_e, playlists, meta) => fn(playlists, meta));

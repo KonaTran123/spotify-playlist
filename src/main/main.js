@@ -273,6 +273,17 @@ function registerIpc() {
     }
   });
 
+  ipcMain.handle('spotify:get-token', async () => {
+    try { return { token: await ensureToken() }; } catch { return { token: null }; }
+  });
+
+  ipcMain.handle('spotify:play-uris', async (_e, { uris, deviceId }) => {
+    try {
+      await withToken(token => spotify.playTracks(token, uris, deviceId));
+      return { ok: true };
+    } catch (e) { return { error: e.message }; }
+  });
+
   ipcMain.handle('spotify:diagnose', async () => {
     try {
       const [me, devices, player] = await Promise.all([
